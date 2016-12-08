@@ -1,22 +1,22 @@
+import WebServer.ServerInfo
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import org.apache.zookeeper.{WatchedEvent, Watcher, ZooKeeper}
-import spray.json.DefaultJsonProtocol._
+import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 
 /**
   * Created by User on 12/8/2016.
   */
 
-object WebServer extends App {
+object WebServer extends App with JsonSupport {
 
   final case class ServerInfo(host: String, port: Int)
-
-  implicit val serverInfoFormat = jsonFormat2(ServerInfo)
 
   // needed to run the route
   implicit val system = ActorSystem()
@@ -54,4 +54,8 @@ object WebServer extends App {
     }
 
   val bindingFuture = Http().bindAndHandle(route, "localhost", 8082)
+}
+
+trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
+  implicit val serverInfoFormat: RootJsonFormat[ServerInfo] = jsonFormat2(ServerInfo)
 }
